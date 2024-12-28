@@ -1,0 +1,135 @@
+#include <stdio.h>
+#include "stdlib.h"
+#include "string.h"
+#include <curses.h>
+#include <wiringPi.h>
+#include <wiringSerial.h>
+#define NUM 12
+#define PWM 1
+typedef struct
+{
+	signed char vel_x;
+	signed char vel_y;
+	signed char vel_z;
+	
+	bool end;
+}VELOCITY;
+void Vel_Select(int ch,VELOCITY* input);
+signed char limit_Data(signed char val, signed char low,signed char high);
+void Send_Array(int Serial,int num,const char * input_array);
+void Send_Vel_Array(VELOCITY*Vel,char *input_array);
+void PWM_Init(void);
+void PWM_Select(float duty);
+
+float duty=0;
+int main(void)
+{
+	initscr();
+	cbreak();
+	noecho();
+	refresh();
+	printf("Welcome use the FISH CONTROL SYSTEM\r\n");
+	printf("Speed up->a  Spped low->d  Exit->x\r\n");
+	char Send_Data[NUM]={0xAA,0,0,0,0,0,0,0,0,0,0,0xCD};
+	int fd;
+	int ch;
+	int recbyte_num=0;
+	int receive_data=0;
+	VELOCITY vel={0};
+	//open the serial
+	if(wiringPiSetup()<0)return 1;
+	PWM_Init();
+	while(!vel.end)
+	//w:119 a:97 s:115 x:120 f:102 e:101 r:114
+	{
+		if((fd=serialOpen("/dev/ttyAMA0",115200))<0)return -1;
+		//get the key value
+		ch=getch();
+		Vel_Select(ch,&vel);
+		//Serial print Part
+		//serialPrintf(fd,"Vx = %d Vy = %d Vz = %d \r\n",vel.vel_x,vel.vel_y,vel.vel_z);
+		recbyte_num=serialDataAvail(fd);
+		while(recbyte_num--)
+		{
+			receive_data=serialGetchar(fd);
+		}
+		Send_Vel_Array(&vel,Send_Data);
+		Send_Array(fd,NUM,Send_Data);
+		
+		serialClose(fd);
+		//Vel output part
+		printf("    Vx = %d Vy = %d Vz = %d DUTY = %f \r\n",vel.vel_x,vel.vel_y,vel.vel_z,duty);
+		printf("     Designed by CHM   press X to exit \r\n");
+		printf(" use W-A-S-D-E-R six key to control the fish\r\n");
+		if(receive_data==1)printf("              Connect correctly\r\n");
+		else printf("              Disconnect!!!\r\n");
+		for(int i=0;i<8;i++)
+		{
+			printf("\r\n");
+		}
+		fflush(stdout);
+	}
+	endwin();
+	return 0;
+}
+
+void Vel_Select(int ch,VELOCITY* input)
+{
+	
+	if(ch==97)input->vel_x++;
+	else if(ch==100)input->vel_x--;
+	else if(ch==119)input->vel_y++;
+	else if(ch==115)input->vel_y--;
+	else if(ch==114)input->vel_z++;
+	else if(ch==101)input->vel_z--;
+	else if(ch==102)
+	{
+		duty=duty+0.5;
+		if(duty>=1.1)duty=0.0f;
+		PWM_Select(duty);
+	}
+	else if(ch==120){
+		input->end=true;
+		input->vel_x=0;
+		input->vel_y=0;
+		input->vel_z=0;
+	}
+	
+	input->vel_x=limit_Data(input->vel_x,-10,10);
+	input->vel_y=limit_Data(input->vel_y,0,10);
+	input->vel_z=limit_Data(input->vel_z,-10,10);
+}
+signed char limit_Data(signed char val, signed char low,signed char high)
+{
+	if(val>high)return high;
+	else if(val<low)return low;
+	else return val;
+}
+void Send_Array(int Serial,int num,const char * input_array)
+{
+	int i=0;
+	for(i=0;i<num;i++){
+		char temp_data=*(input_array+i);
+		serialPutchar(Serial,temp_data);
+	}
+	
+}
+void Send_Vel_Array(VELOCITY*Vel,char *input_array)
+{
+	char *p=input_array;
+	*(p+1)=Vel->vel_x;
+	*(p+2)=Vel->vel_y;
+	*(p+3)=Vel->vel_z;
+}
+void PWM_Init(void)
+{
+	pinMode(PWM,PWM_OUTPUT);
+	pwmSetMode(PWM_MODE_MS);
+	pwmSetRange(1024);//pwm ARR=1024
+	pwmSetClock(25);//19.2MHz/75/1024=750Hz
+	pwmWrite(PWM,0);
+}
+void PWM_Select(float duty)
+{
+	pwmWrite(PWM,(int)1024*duty);
+}
