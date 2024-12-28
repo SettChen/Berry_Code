@@ -42,23 +42,23 @@ int main(void)
 	while(!vel.end)
 	//w:119 a:97 s:115 x:120 f:102 e:101 r:114
 	{
-		if((fd=serialOpen("/dev/ttyAMA0",115200))<0)return -1;
+		//if((fd=serialOpen("/dev/ttyAMA0",115200))<0)return -1;
 		//get the key value
 		ch=getch();
 		Vel_Select(ch,&vel);
 		//Serial print Part
 		//serialPrintf(fd,"Vx = %d Vy = %d Vz = %d \r\n",vel.vel_x,vel.vel_y,vel.vel_z);
-		recbyte_num=serialDataAvail(fd);
-		while(recbyte_num--)
-		{
-			receive_data=serialGetchar(fd);
-		}
+		//recbyte_num=serialDataAvail(fd);
+		//while(recbyte_num--)
+		//{
+		//	receive_data=serialGetchar(fd);
+		//}
 		Send_Vel_Array(&vel,Send_Data);
-		Send_Array(fd,NUM,Send_Data);
+		//Send_Array(fd,NUM,Send_Data);
 		
-		serialClose(fd);
+		//serialClose(fd);
 		//Vel output part
-		printf("    Vx = %d Vy = %d Vz = %d DUTY = %f \r\n",vel.vel_x,vel.vel_y,vel.vel_z,duty);
+		printf("    VX = %d Vy = %d Vz = %d DUTY = %f \r\n",vel.vel_x,vel.vel_y,vel.vel_z,duty);
 		printf("     Designed by CHM   press X to exit \r\n");
 		printf(" use W-A-S-D-E-R six key to control the fish\r\n");
 		if(receive_data==1)printf("              Connect correctly\r\n");
