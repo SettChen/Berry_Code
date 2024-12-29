@@ -124,13 +124,11 @@ void Fre_Select(int ch,FREQUENCY* input)
 		input->Frequency_E=0;
 	}
 	
-	
-	
-	input->Frequency_A=limit_Data(input->Frequency_A,0,10);
-	input->Frequency_B=limit_Data(input->Frequency_B,0,10);
-	input->Frequency_C=limit_Data(input->Frequency_C,0,10);
-	input->Frequency_D=limit_Data(input->Frequency_D,0,10);
-	input->Frequency_E=limit_Data(input->Frequency_E,0,10);
+	input->Frequency_A=limit_Data(input->Frequency_A,0,50);
+	input->Frequency_B=limit_Data(input->Frequency_B,0,50);
+	input->Frequency_C=limit_Data(input->Frequency_C,0,50);
+	input->Frequency_D=limit_Data(input->Frequency_D,0,50);
+	input->Frequency_E=limit_Data(input->Frequency_E,0,50);
 }
 void Vel_Select(int ch,VELOCITY* input)
 {
