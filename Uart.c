@@ -69,13 +69,14 @@ int main(void)
 		
 		serialClose(fd);
 		//Vel output part
-		printf("         Fre1=%d,Fre2=%d,Fre3=%d,Fre4=%d,Fre5=%d\r\n",fre.Frequency_A,fre.Frequency_B,fre.Frequency_C,fre.Frequency_D,fre.Frequency_E);
+		printf("      Fre1=%d,Fre2=%d,Fre3=%d,Fre4=%d,Fre5=%d\r\n",fre.Frequency_A,fre.Frequency_B,fre.Frequency_C,fre.Frequency_D,fre.Frequency_E);
+		printf("                    duty=%f\r\n",duty);
 		printf("   Designed by CHM   press X to exit input=%d\r\n",ch);
-		printf("press c-f-v-g-b-h-n-j-m-k to control frequency\r\n");
+		printf("press w-c-f-v-g-b-h-n-j-m-k to control frequency\r\n");
 		printf("   press X to exit,press z to zero all frequency\r\n");
 		if(receive_data==1)printf("              Connect correctly\r\n");
 		else printf("              Disconnect!!!\r\n");
-		for(int i=0;i<7;i++)
+		for(int i=0;i<6;i++)
 		{
 			printf("\r\n");
 		}
@@ -109,9 +110,9 @@ void Fre_Select(int ch,FREQUENCY* input)
 		input->Frequency_D=0;
 		input->Frequency_E=0;
 	}
-	else if(ch==97)
+	else if(ch==119)
 	{
-		duty=duty+0.5;
+		duty=duty+1.0;
 		if(duty>=1.1)duty=0.0f;
 		PWM_Select(duty);
 	}
@@ -139,10 +140,10 @@ void Vel_Select(int ch,VELOCITY* input)
 	else if(ch==115)input->vel_y--;
 	else if(ch==114)input->vel_z++;
 	else if(ch==101)input->vel_z--;
-	else if(ch==102)
+	else if(ch==119)//w
 	{
-		duty=duty+0.5;
-		if(duty>=1.1)duty=0.0f;
+		duty=duty+1.0;
+		if(duty>1.1)duty=0.0f;
 		PWM_Select(duty);
 	}
 	else if(ch==120){
