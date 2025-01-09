@@ -34,6 +34,7 @@ void Fre_Select(int ch,FREQUENCY* input);
 void Send_Array_Fre(FREQUENCY*Fre,char*input_array);
 
 float duty=0;
+char Output_State[5]={0};
 int main(void)
 {
 	initscr();
@@ -42,18 +43,20 @@ int main(void)
 	refresh();
 	printf("Welcome use the FISH CONTROL SYSTEM\r\n");
 	char Send_Data[NUM]={0xAA,0,0,0,0,0,0xCD};
+
 	int fd;
 	int ch;
 	int recbyte_num=0;
 	int receive_data=0;
 	VELOCITY vel={0};
-	FREQUENCY fre={0};
+	FREQUENCY fre={25,25,25,25,25};
 	//open the serial
 	if(wiringPiSetup()<0)return 1;
 	PWM_Init();
 	while(!fre.end)
 	//w:119 a:97 s:115 x:120 f:102 e:101 r:114
 	{
+		int State_Count=0;
 		if((fd=serialOpen("/dev/ttyAMA0",115200))<0)return -1;
 		//get the key value
 		ch=getch();
@@ -69,17 +72,17 @@ int main(void)
 		
 		serialClose(fd);
 		//Vel output part
-		printf("      Fre1=%d,Fre2=%d,Fre3=%d,Fre4=%d,Fre5=%d\r\n",fre.Frequency_A,fre.Frequency_B,fre.Frequency_C,fre.Frequency_D,fre.Frequency_E);
-		printf("                    duty=%f\r\n",duty);
-		printf("   Designed by CHM   press X to exit input=%d\r\n",ch);
-		printf("press w-c-f-v-g-b-h-n-j-m-k to control frequency\r\n");
-		printf("   press X to exit,press z to zero all frequency\r\n");
-		if(receive_data==1)printf("              Connect correctly\r\n");
-		else printf("              Disconnect!!!\r\n");
-		for(int i=0;i<6;i++)
+		printf("Fre1=%d,Fre2=%d,Fre3=%d,Fre4=%d,Fre5=%d\r\n",fre.Frequency_A,fre.Frequency_B,fre.Frequency_C,fre.Frequency_D,fre.Frequency_E);
+		for(State_Count=0;State_Count<5;State_Count++)
 		{
-			printf("\r\n");
+			printf("Fre%d State:%d\r\n",State_Count,Output_State[State_Count]);
 		}
+		printf("duty=%f\r\n",duty);
+		printf("Designed by CHM   press X to exit input=%d\r\n",ch);
+		printf("press w-c-f-v-g-b-h-n-j-m-k to control frequency\r\n");
+		printf("press X to exit,press z to zero all frequency\r\n");
+		if(receive_data==1)printf("Connect correctly\r\n\r\n");
+		else printf("Disconnect!!!\r\n\r\n");
 		fflush(stdout);
 	}
 	endwin();
@@ -102,13 +105,43 @@ void Fre_Select(int ch,FREQUENCY* input)
 	else if(ch==109)input->Frequency_E--;
 	else if(ch==107)input->Frequency_E++;
 	
+	if(ch==114)
+	{
+		if(Output_State[0]==0)Output_State[0]=1;
+		else Output_State[0]=0;
+	}
+	if(ch==116)
+	{
+		if(Output_State[1]==0)Output_State[1]=1;
+		else Output_State[1]=0;
+	}
+	if(ch==121)
+	{
+		if(Output_State[2]==0)Output_State[2]=1;
+		else Output_State[2]=0;
+	}
+	if(ch==117)
+	{
+		if(Output_State[3]==0)Output_State[3]=1;
+		else Output_State[3]=0;
+	}
+	if(ch==105)
+	{
+		if(Output_State[4]==0)Output_State[4]=1;
+		else Output_State[4]=0;
+	}
+	
 	if(ch==122)
 	{
-		input->Frequency_A=0;
-		input->Frequency_B=0;
-		input->Frequency_C=0;
-		input->Frequency_D=0;
-		input->Frequency_E=0;
+		input->Frequency_A=25;
+		input->Frequency_B=25;
+		input->Frequency_C=25;
+		input->Frequency_D=25;
+		input->Frequency_E=25;
+		for(int i=0;i<5;i++)
+		{
+			Output_State[i]=0;
+		}
 	}
 	else if(ch==119)
 	{
@@ -175,11 +208,12 @@ void Send_Array(int Serial,int num,const char * input_array)
 void Send_Array_Fre(FREQUENCY*Fre,char*input_array)
 {
 	char *p=input_array;
-	*(p+1)=Fre->Frequency_A;
-	*(p+2)=Fre->Frequency_B;
-	*(p+3)=Fre->Frequency_C;
-	*(p+4)=Fre->Frequency_D;
-	*(p+5)=Fre->Frequency_E;
+
+	*(p+1)=(Fre->Frequency_A)*Output_State[0];
+	*(p+2)=(Fre->Frequency_B)*Output_State[1];
+	*(p+3)=(Fre->Frequency_C)*Output_State[2];
+	*(p+4)=(Fre->Frequency_D)*Output_State[3];
+	*(p+5)=(Fre->Frequency_E)*Output_State[4];
 }
 void Send_Vel_Array(VELOCITY*Vel,char *input_array)
 {
