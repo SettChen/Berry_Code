@@ -58,6 +58,7 @@ int main(void)
 	{
 		int State_Count=0;
 		if((fd=serialOpen("/dev/ttyAMA0",115200))<0)return -1;
+		
 		//get the key value
 		ch=getch();
 		Fre_Select(ch,&fre);
@@ -77,7 +78,6 @@ int main(void)
 		{
 			printf("Fre%d State:%d\r\n",State_Count,Output_State[State_Count]);
 		}
-		printf("duty=%f\r\n",duty);
 		printf("Designed by CHM   press X to exit input=%d\r\n",ch);
 		printf("press w-c-f-v-g-b-h-n-j-m-k to control frequency\r\n");
 		if(receive_data==1)printf("Connect correctly\r\n\r\n");
@@ -90,22 +90,22 @@ int main(void)
 void Fre_Select(int ch,FREQUENCY* input)
 {
 	if(ch==99)input->Frequency_A--;
-	else if(ch==102)input->Frequency_A++;
+	if(ch==102)input->Frequency_A++;
 	
-	else if(ch==118)input->Frequency_B--;
-	else if(ch==103)input->Frequency_B++;
+	if(ch==118)input->Frequency_B--;
+	if(ch==103)input->Frequency_B++;
 	
-	else if(ch==98)input->Frequency_C--;
-	else if(ch==104)input->Frequency_C++;
+	if(ch==98)input->Frequency_C--;
+	if(ch==104)input->Frequency_C++;
 	
-	else if(ch==110)input->Frequency_D--;
-	else if(ch==106)input->Frequency_D++;
+	if(ch==110)input->Frequency_D--;
+	if(ch==106)input->Frequency_D++;
 	
-	else if(ch==109)input->Frequency_E--;
-	else if(ch==107)input->Frequency_E++;
+	if(ch==109)input->Frequency_E--;
+	if(ch==107)input->Frequency_E++;
 	
-	else if(ch==44)input->Frequency_F--;
-	else if(ch==108)input->Frequency_F++;
+	if(ch==44)input->Frequency_F--;
+	if(ch==108)input->Frequency_F++;
 	
 	if(ch==114)
 	{
@@ -151,13 +151,40 @@ void Fre_Select(int ch,FREQUENCY* input)
 			Output_State[i]=0;
 		}
 	}
-	else if(ch==119)
+	if(ch==119)//w
 	{
-		duty=duty+1.0;
-		if(duty>=1.1)duty=0.0f;
-		PWM_Select(duty);
+		Output_State[0]=1;
 	}
-	else if(ch==120){
+	if(ch==115)//s
+	{
+		for(int i=0;i<6;i++)
+		{
+			Output_State[i]=0;
+		}
+	}
+	if(ch==97)//a
+	{
+		Output_State[0]=0;
+		Output_State[1]=0;
+		Output_State[2]=1;
+	}
+	if(ch==100)//d
+	{
+		Output_State[0]=0;
+		Output_State[1]=1;
+		Output_State[2]=0;
+	}
+	if(ch==113)//q
+	{
+		Output_State[3]=1;
+		Output_State[4]=0;
+	}
+	if(ch==101)//e
+	{
+		Output_State[3]=0;
+		Output_State[4]=1;
+	}
+	if(ch==120){
 		input->end=true;
 		input->Frequency_A=0;
 		input->Frequency_B=0;
