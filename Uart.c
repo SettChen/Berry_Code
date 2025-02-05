@@ -154,6 +154,8 @@ void Fre_Select(int ch,FREQUENCY* input)
 	if(ch==119)//w
 	{
 		Output_State[0]=1;
+		Output_State[1]=0;
+		Output_State[2]=0;
 	}
 	if(ch==115)//s
 	{
